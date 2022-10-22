@@ -1,0 +1,127 @@
+import gamelib
+
+ANCHO_VENTANA = 300
+ALTO_VENTANA = 330
+JUGADOR_UNO="O"
+JUGADOR_DOS="X"
+
+def juego_crear():
+    """Inicializar el estado del juego"""
+    desc=['          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',
+    '          ',]
+    grilla=[]
+    for i in desc:
+        lista=list(i)
+        grilla.append(lista)
+    return grilla
+
+def juego_actualizar(juego, x, y,contador):
+    """Actualizar el estado del juego
+    x e y son las coordenadas (en pixels) donde el usuario hizo click.
+    Esta función determina si esas coordenadas corresponden a una celda
+    del tablero; en ese caso determina el nuevo estado del juego y lo
+    devuelve.
+    """
+    print(turno(juego,contador))
+    fila,columna=pasar_px_a_filas_columnas(x,y)
+    if juego[fila][columna]==" ":
+        juego[fila][columna]=turno(juego,contador)
+    print(juego)
+    print(fila,columna)
+    contador+=1
+    return juego
+
+def juego_mostrar(juego,contador):
+    """Actualizar la ventana"""
+    for i in range(len(juego)):
+        gamelib.draw_line(i*30, 0, i*30, 300, fill='white', width=2)
+    for c in range(len(juego)):
+        gamelib.draw_line(0, (c+1)*30, 330, (c+1)*30, fill='white', width=2)
+    
+    if juego_ganado(juego)==True:
+        gamelib.draw_text("Juego Terminado", 100,305 , fill='White', anchor='nw')
+    else:
+        '''if xd=="X":
+                gamelib.draw_text("x", xd*30,xd*30 , fill='White', anchor='nw')'''
+        for o in juego:
+                if o=="O":
+                    gamelib.draw_text("O", o*30,o*30 , fill='White', anchor='nw')
+        if (turno(juego,contador))=="O":
+            gamelib.draw_text("Turno de: O", 100,305 , fill='White', anchor='nw')
+        else:
+            gamelib.draw_text("Turno de: X", 100,305 , fill='White', anchor='nw')
+    return juego
+   
+def main():
+    juego = juego_crear()
+    contador=0
+    # Ajustar el tamaño de la ventana
+    gamelib.resize(ANCHO_VENTANA, ALTO_VENTANA)
+
+    # Mientras la ventana esté abierta:
+    while gamelib.is_alive():
+        # Todas las instrucciones que dibujen algo en la pantalla deben ir
+        # entre `draw_begin()` y `draw_end()`:
+        gamelib.draw_begin()
+        juego_mostrar(juego,contador)
+        gamelib.draw_end()
+
+        # Terminamos de dibujar la ventana, ahora procesamos los eventos (si el
+        # usuario presionó una tecla o un botón del mouse, etc).
+
+        # Esperamos hasta que ocurra un evento
+        ev = gamelib.wait()
+
+        if not ev:
+            # El usuario cerró la ventana.
+            break
+
+        if ev.type == gamelib.EventType.KeyPress and ev.key == 'Escape':
+            # El usuario presionó la tecla Escape, cerrar la aplicación.
+            break
+
+        if ev.type == gamelib.EventType.ButtonPress:
+            # El usuario presionó un botón del mouse
+            x, y = ev.x, ev.y # averiguamos la posición donde se hizo click
+            juego = juego_actualizar(juego, x, y,contador)
+            contador+=1
+#------funciones auxiliares
+def juego_ganado(grilla):
+    filas=len(grilla)
+    columnas=len(grilla[0])
+    for f in range(filas):
+        for c in range(columnas):
+            if grilla[f][c]==JUGADOR_UNO and  grilla[f][c+1]==JUGADOR_UNO and  grilla[f][c+2]==JUGADOR_UNO and grilla[f][c+3]==JUGADOR_UNO and grilla[f][c+4]==JUGADOR_UNO:
+                return True
+            elif grilla[f][c]==JUGADOR_DOS and grilla[f+1][c]==JUGADOR_DOS and grilla[f+2][c]==JUGADOR_DOS and grilla[f+3][c]==JUGADOR_DOS and grilla[f+4][c]==JUGADOR_DOS:
+                return True
+    return False
+
+def pasar_px_a_filas_columnas(x,y):
+    fila= x // 30  
+    columna = y // 30  
+    ubicacion=[fila,columna]
+    return ubicacion
+
+def pasar_filas_columnas_a_px(fila,columna):
+    x=fila*30
+    y=columna*30
+    ubicacion=(x,y)
+    return ubicacion
+
+def turno(juego,contador):
+    if contador%2==0:
+        turno_jugador=JUGADOR_UNO
+    else:
+        turno_jugador=JUGADOR_DOS
+    return turno_jugador
+
+gamelib.init(main)
